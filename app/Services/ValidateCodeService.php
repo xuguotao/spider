@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Constants\ValidateCodeNumber;
 
-class ValidateCodeService
+class ValidateCodeService extends BaseService
 {
     const VALIDATE_CODE_URL = "https://mis.ielts.cn/ValidateLogin.aspx";
 

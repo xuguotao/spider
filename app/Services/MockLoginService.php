@@ -4,11 +4,13 @@ namespace App\Services;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Cookie\SetCookie;
+use Illuminate\Support\Str;
 use Sunra\PhpSimple\HtmlDomParser;
 
-class MockLoginService
+class MockLoginService extends BaseService
 {
     const LOGIN_URL = "https://mis.ielts.cn/Login.aspx";
+    private $tryTimes = 1;
 
     public function getLoginCookie()
     {
@@ -28,8 +30,11 @@ class MockLoginService
 
     public function postLogin()
     {
+        echo "尝试第" . $this->tryTimes . "登陆....";
 
         list($cookie, $inputData) = $this->getLoginCookie();
+        unset($inputData['LoginButton']);
+
         $validateCodeService = new ValidateCodeService();
         $validateCodeNumber = $validateCodeService->getValidateCodeNumber($cookie);
 
@@ -39,49 +44,41 @@ class MockLoginService
         $inputData['LoginButton.x'] = 84;
         $inputData['LoginButton.y'] = 16;
         $inputData['__VIEWSTATEGENERATOR']="C2EE9ABB";
-//        $inputData['__VIEWSTATE'] = urlencode($inputData['__VIEWSTATE']);
-//        $inputData['__EVENTVALIDATION'] = urlencode($inputData['__EVENTVALIDATION']);
 
         $header[] = "Cookie: " . $cookie;
-        print_r($header);
-        print_r($inputData);
-        echo \GuzzleHttp\Psr7\build_query($inputData);
-        $ch = curl_init(self::LOGIN_URL);
-        dd();
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, \GuzzleHttp\Psr7\build_query($inputData));//POST数据
+        $postLoginHtml = $this->curlPost(self::LOGIN_URL, $inputData, $header);
 
-        $rs = curl_exec($ch);
-        print_r($rs);
-        print_r(curl_getinfo($ch));
-        curl_close($ch);
+        $dom = HtmlDomParser::str_get_html($postLoginHtml);
+        $afterFormData = [];
 
-//        $cookieJar = new CookieJar();
-//        $setCookie = explode("=", $cookie);
-//        $cookieJar->setCookie(new SetCookie($setCookie));
-//        $res = $this->getClient()->post(self::LOGIN_URL, [
-//            "form_params" => $inputData,
-//            'cookies' => $cookieJar,
-//        ]);
-//
-//        print_r($res->getBody()->getContents());
-    }
+        foreach ($dom->find('input') as $el) {
+            $afterFormData[$el->name] = $el->value;
+        }
 
-    public function getFormData($body)
-    {
+        unset($afterFormData['Button_Login']);
+        $afterFormData['Button_Login.x'] = 0;
+        $afterFormData['Button_Login.y'] = 0;
+        $afterFormData['SelectedBranchSN'] = 'BSN140711000001';
+        $afterFormData['HiddenFiled_S_System'] = 'S07';
 
+        $salesHtml = $this->curlPost(self::LOGIN_URL, $afterFormData, $header);
+        preg_match('/Set-Cookie:(.*);/iU', $salesHtml, $returnCookie);
+
+        if (isset($returnCookie[1]) && str_is("MIS_LoginUser*", trim($returnCookie[1]))) {
+            echo "登陆成功..." . "\n\r";
+            return trim($cookie) . "; " . trim($returnCookie[1]);
+        } elseif ($this->tryTimes < 10) {
+            $this->tryTimes++;
+            return $this->postLogin();
+        } else {
+            echo "登陆失败..." . "\n\r";
+        }
     }
 
     private function getClient()
     {
         $client = new Client(
             [
-                'base_uri'        => 'https://mis.ielts.cn',
-                'timeout'         => 0,
                 'defaults' => [
                     "verify" => false
                 ],
