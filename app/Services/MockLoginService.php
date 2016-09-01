@@ -38,8 +38,8 @@ class MockLoginService extends BaseService
         $validateCodeService = new ValidateCodeService();
         $validateCodeNumber = $validateCodeService->getValidateCodeNumber($cookie);
 
-        $inputData['UserName'] = "7999";
-        $inputData['PassWord'] = "Woaini123";
+        $inputData['UserName'] = "7996";
+        $inputData['PassWord'] = "Wuqiang1219";
         $inputData['TBValidate'] = $validateCodeNumber;
         $inputData['LoginButton.x'] = 84;
         $inputData['LoginButton.y'] = 16;

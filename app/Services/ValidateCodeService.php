@@ -25,6 +25,10 @@ class ValidateCodeService extends BaseService
         foreach ($splitNumData as $num => $numData) {
             $validateCodeNum .= $this->getSimilarMaxNum($numData);
         }
+//
+//        echo ($this->printData($clearData));
+//        echo $validateCodeNum;
+//        dd();
 
         return $validateCodeNum;
     }
@@ -160,7 +164,7 @@ class ValidateCodeService extends BaseService
 
     private function printData($data)
     {
-        $rs = "";
+        $rs = "\n\r";
         foreach ($data as $row) {
             foreach ($row as $value) {
                 if ($value == 1) {
@@ -172,6 +176,6 @@ class ValidateCodeService extends BaseService
             $rs .= "\n\r";
         }
 
-        print $rs;
+        print $rs . "\n\r";
     }
 }

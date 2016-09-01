@@ -14,4 +14,5 @@
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('validateCode', 'SpiderController@validateCode');
+Route::get('result', 'SpiderController@index');
+

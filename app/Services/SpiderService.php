@@ -86,7 +86,7 @@ class SpiderService extends BaseService
     {
         $searchData['Key'] = $studentName;
         $searchData['Page'] = 1;
-        $searchData['SchoolSn'] = "";
+        $searchData['SchoolSn'] = "SCH090306000001";
         $searchData['SearchType'] = 1;
 
         return $searchData;
