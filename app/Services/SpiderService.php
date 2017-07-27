@@ -24,7 +24,8 @@ class SpiderService extends BaseService
     {
         $this->mockLoginService = $mockLoginService;
         $this->startTime = time();
-        $this->firstDay = strtotime('midnight first day of this month');
+        //$this->firstDay = strtotime('midnight first day of this month');
+        $this->firstDay = strtotime('2017-07-01');
     }
 
     public function search($searchCookie, $offset, $limit)
@@ -125,7 +126,7 @@ class SpiderService extends BaseService
 
             foreach ($trList as $tr) {
                 $billType = trim($tr->children(1)->innertext);
-                $billDate = strtotime(trim($tr->children(9)->innertext));
+                $billDate = strtotime(trim($tr->children(11)->innertext));
 
                 if ($billType == '充值') {
                     $this->activeRecordList[] = $billDate;

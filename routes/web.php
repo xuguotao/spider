@@ -15,4 +15,5 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('result', 'SpiderController@index');
+Route::get('export', 'SpiderController@exportStudent');
 

@@ -38,8 +38,10 @@ class MockLoginService extends BaseService
         $validateCodeService = new ValidateCodeService();
         $validateCodeNumber = $validateCodeService->getValidateCodeNumber($cookie);
 
-        $inputData['UserName'] = "7996";
-        $inputData['PassWord'] = "Wuqiang1219";
+//        $inputData['UserName'] = "8072";
+//        $inputData['PassWord'] = "1234qwerASDF";
+        $inputData['UserName'] = "7999";
+        $inputData['PassWord'] = "Yoyo2012";
         $inputData['TBValidate'] = $validateCodeNumber;
         $inputData['LoginButton.x'] = 84;
         $inputData['LoginButton.y'] = 16;
@@ -67,11 +69,12 @@ class MockLoginService extends BaseService
         if (isset($returnCookie[1]) && str_is("MIS_LoginUser*", trim($returnCookie[1]))) {
             echo "登陆成功..." . "\n\r";
             return trim($cookie) . "; " . trim($returnCookie[1]);
-        } elseif ($this->tryTimes < 10) {
+        } elseif ($this->tryTimes < 4) {
             $this->tryTimes++;
             return $this->postLogin();
         } else {
             echo "登陆失败..." . "\n\r";
+            die();
         }
     }
 
