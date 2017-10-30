@@ -41,7 +41,12 @@ class Spider extends Command
     public function handle()
     {
         list($offset, $limit) = $this->processArgs($this->arguments());
-        $searchCookie = $this->mockLoginService->postLogin();
+        if (\Cache::has('remote_cookie')) {
+            $this->info('miss login');
+            $searchCookie = \Cache::get('remote_cookie');
+        } else {
+            $searchCookie = $this->mockLoginService->postLogin();
+        }
 
         $this->spiderService->search($searchCookie, $offset, $limit);
     }

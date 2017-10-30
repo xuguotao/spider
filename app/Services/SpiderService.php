@@ -25,7 +25,7 @@ class SpiderService extends BaseService
         $this->mockLoginService = $mockLoginService;
         $this->startTime = time();
         //$this->firstDay = strtotime('midnight first day of this month');
-        $this->firstDay = strtotime('2017-07-01');
+        $this->firstDay = strtotime('2017-10-01');
     }
 
     public function search($searchCookie, $offset, $limit)
@@ -55,27 +55,43 @@ class SpiderService extends BaseService
         try {
             $studentListHtml = $this->curlPost(self::SEARCH_URL, $searchData, $this->generateHeaders());
             $dom = HtmlDomParser::str_get_html($studentListHtml);
+            $maxPage = 1;
             if ($dom) {
+                $maxPage = $this->getStudentPageMaxPage($dom);
+                if ($maxPage >= 10) {
+                    $maxPage = 10;
+                    \Log::info('只查10页', $studentModel->toArray());
+                }
                 $aTag = $dom->find('tr td a');
                 foreach ($aTag as $el) {
                     if (str_is("*Student/SignUp/Student.aspx*", $el->href)) {
-                        $this->activeRecordList = [];
-                        $url = $el->href;
-                        $tempArray = explode("?", $url);
-                        $billDateList = $this->getBillList($tempArray[1]);
-                        $studentUrlModel = new StudentUrl();
-                        $studentUrlModel->student_id = $studentModel->id;
-                        $studentUrlModel->student_url = $url;
-                        if ($this->isTarget($billDateList)) {
+                        if (\Cache::has(md5($el->href))) {
+                            continue;
+                        } else {
+                            $this->activeRecordList = [];
+                            $url = $el->href;
+                            $tempArray = explode("?", $url);
+                            $billDateList = $this->getBillList($tempArray[1]);
+                            $studentUrlModel = new StudentUrl();
+                            $studentUrlModel->student_id = $studentModel->id;
+                            $studentUrlModel->student_url = $url;
+                            if ($this->isTarget($billDateList)) {
 
-                            $studentUrlModel->bill_status = 1;
-                            echo "查询到有交费: " . $studentModel->student_name . "\n\r";
+                                $studentUrlModel->bill_status = 1;
+                                echo "查询到有交费: " . $studentModel->student_name . "\n\r";
+                            }
+
+                            $studentUrlModel->save();
+                            \Cache::add(md5($url), 1, 60);
                         }
-
-                        $studentUrlModel->save();
                     }
                 }
             } else {
+                $this->searchResult($studentModel, $searchData);
+            }
+
+            if ($searchData['Page'] < $maxPage) {
+                $searchData['Page'] += 1;
                 $this->searchResult($studentModel, $searchData);
             }
         } catch (\Exception $e) {
@@ -103,7 +119,7 @@ class SpiderService extends BaseService
     {
         $timeFlag = false;
         $dateFlag = false;
-        if (count($billList) >= 2) {
+        if (count($billList) >= 1) {
             $timeFlag = true;
         }
         foreach ($billList as $billDate) {
@@ -155,6 +171,18 @@ class SpiderService extends BaseService
         } else {
             return 1;
         }
+    }
+
+    private function getStudentPageMaxPage($dom)
+    {
+        $pageDom = $dom->find('input[id=sourceCount]', 0);
+        if(!empty($pageDom)) {
+            $maxPage = ceil($pageDom->value / 15);
+        } else {
+            $maxPage = 1;
+        }
+
+        return $maxPage;
     }
 
     private function generateHeaders()
