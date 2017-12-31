@@ -25,7 +25,7 @@ class SpiderService extends BaseService
         $this->mockLoginService = $mockLoginService;
         $this->startTime = time();
         //$this->firstDay = strtotime('midnight first day of this month');
-        $this->firstDay = strtotime('2017-10-01');
+        $this->firstDay = strtotime('2017-12-01');
     }
 
     public function search($searchCookie, $offset, $limit)
@@ -63,8 +63,12 @@ class SpiderService extends BaseService
                     \Log::info('只查10页', $studentModel->toArray());
                 }
                 $aTag = $dom->find('tr td a');
+                $studentURLList = [];
+
                 foreach ($aTag as $el) {
                     if (str_is("*Student/SignUp/Student.aspx*", $el->href)) {
+                        $billCount = $el->parent()->parent()->children(3)->innertext;
+                        if ($billCount == 0) continue;
                         if (\Cache::has(md5($el->href))) {
                             continue;
                         } else {
@@ -82,7 +86,7 @@ class SpiderService extends BaseService
                             }
 
                             $studentUrlModel->save();
-                            \Cache::add(md5($url), 1, 60);
+                            \Cache::add(md5($url), 1 , 60);
                         }
                     }
                 }
@@ -117,9 +121,13 @@ class SpiderService extends BaseService
 
     private function isTarget($billList)
     {
+        if (empty($billList)) {
+            return false;
+        }
+
         $timeFlag = false;
         $dateFlag = false;
-        if (count($billList) >= 1) {
+        if (count($billList) >= 2) {
             $timeFlag = true;
         }
         foreach ($billList as $billDate) {
