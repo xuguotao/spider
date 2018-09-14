@@ -25,7 +25,7 @@ class SpiderService extends BaseService
         $this->mockLoginService = $mockLoginService;
         $this->startTime = time();
         //$this->firstDay = strtotime('midnight first day of this month');
-        $this->firstDay = strtotime('2017-12-01');
+        $this->firstDay = strtotime('2018-09-01');
     }
 
     public function search($searchCookie, $offset, $limit)
