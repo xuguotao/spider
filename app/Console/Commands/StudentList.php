@@ -26,16 +26,14 @@ class StudentList extends Command
         if ($this->loginClient) {
             $this->info('登录成功');
             $data = $this->getStudentListData();
-//            print_r($data);
-//            $rs = $orderListModel->addAll($data);
-//            print_r($rs);
+            $rs = $orderListModel->addAll($data);
         } else {
             $this->error("登录失败");
         }
 
     }
 
-    private function getStudentListData($nowPage = 63)
+    private function getStudentListData($nowPage = 1)
     {
         $pageSize = 50;
         $startRecord = ($nowPage-1) * $pageSize;
@@ -57,6 +55,8 @@ class StudentList extends Command
                         'student_name' => $row['studentName'],
                         'student_sn' => $row['studentSn'],
                         'student_type' => $row['type'],
+                        'res_id' => $row['relResourceId'],
+                        'res_pid' => $row['relResourcePid'],
                         'school_area' => $row['schoolArea'],
                         'order_sn' => $row['orderId'],
                         'order_created_time' => $row['createTime'],
@@ -72,6 +72,7 @@ class StudentList extends Command
             $this->orderList = array_merge($this->orderList, $insertData);
             $this->info("合并完第 " . $nowPage . " 页，共 " . count($this->orderList) . " 条数据");
             DB::table('order_list')->insert($insertData);
+            sleep(rand(0,3));
             return $this->getStudentListData($nowPage+1);
         } else {
             return $this->orderList;

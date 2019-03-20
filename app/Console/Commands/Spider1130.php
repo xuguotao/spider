@@ -25,23 +25,25 @@ class Spider1130 extends Command
             $this->info('登录成功');
 
             $studentIdList = $this->getStudentIdList();
+            print_r(count($studentIdList));
             foreach ($studentIdList as $studentId)
             {
                 $this->info('开始获取 ' . $studentId . ' 的缴费信息');
                 $this->getStudentPayLog($studentId);
+                //sleep(rand(0, 10));
             }
         } else {
             $this->error("登录失败");
         }
-
-
     }
 
     protected function getStudentIdList()
     {
+
         $studentIdList = OrderListModel::distinct('student_id')
             ->where('student_type', '0')
-            ->where('id', '>=', 1717)
+            ->where('order_created_time', '>=', '')
+            ->where('id', '>=', 9214)
             ->pluck('student_id');
 
         return $studentIdList;
