@@ -49,7 +49,7 @@ class StudentList extends Command
         $data = json_decode($response->getBody()->getContents(), true);
         if (isset($data['exhibitDatas']) and is_array($data['exhibitDatas'])) {
             foreach ($data['exhibitDatas'] as $row) {
-                if ($row['createTime'] >= $this->targetMonth . '-01 00:00:00' and $row['createTime'] <= $this->targetMonth . '-31 23:59:59') {
+                if ($row['createTime'] >= $this->targetMonth . '-20 00:00:00' and $row['createTime'] <= $this->targetMonth . '-31 23:59:59') {
                     $insertData[] = array(
                         'student_id' => $row['relStudentId'],
                         'student_name' => $row['studentName'],

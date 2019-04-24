@@ -42,7 +42,7 @@ class Spider1130 extends Command
 
         $studentIdList = OrderListModel::distinct('student_id')
             ->where('student_type', '0')
-            ->where('id', '>=', 23666)
+            ->where('id', '>=', 29636)
             ->pluck('student_id');
 
         return $studentIdList;
